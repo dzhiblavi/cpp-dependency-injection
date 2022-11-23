@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message DProto {
+  int32 x = 1;
+}
+
+message IProto {
+  string impl = 1;
+  oneof impl_spec {
+    DProto dproto = 2;
+  }
+}
