@@ -15,11 +15,10 @@ cc_library(
 cc_test(
     name = "di_test",
     srcs = [
-        "all_factories_test.cpp",
-        "protobuf_inject_test.cpp",
-        "protobuf_singleton_test.cpp",
-        "inject_test.cpp",
-        "runtime_singleton_test.cpp",
+        "combined_factory_test.cpp",
+        "constructor_factory_test.cpp",
+        "dispatcher_factory_test.cpp",
+        "singleton_test.cpp",
     ],
     deps = [
         ":di_test_lib",

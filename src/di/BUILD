@@ -6,8 +6,6 @@ cc_library(
         "Dispatcher.hpp",
         "TagDispatcher.hpp",
         "RuntimeSingleton.hpp",
-        "detail.hpp",
-        "getter.hpp",
     ],
     include_prefix = "di",
     visibility = ["//visibility:public"],

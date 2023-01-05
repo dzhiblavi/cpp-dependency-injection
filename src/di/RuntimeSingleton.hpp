@@ -10,7 +10,9 @@
 namespace di {
 
 template <
-  typename Interface, std::derived_from<SettingsBase> Settings, typename Dispatcher = void>
+  typename Interface,
+  std::derived_from<SettingsBase> Settings,
+  typename Dispatcher = void>
 class RuntimeSingleton {
  public:
   ~RuntimeSingleton() noexcept { Discard(); }

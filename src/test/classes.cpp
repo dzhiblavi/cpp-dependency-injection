@@ -2,11 +2,11 @@
 
 D::D(int x) : x(x) {}
 
+D::D(const std::string& x) : x(x.size()) {}
+
 D::D(const DProto& proto) : x(proto.x()) {}
 
 int D::Value() { return x; }
-
-[[maybe_unused]] RegisterD r("D");
 
 std::string i_json_config =
   "{                  "
@@ -15,4 +15,7 @@ std::string i_json_config =
   "     \"x\": 239    "
   "  }                "
   "}                  ";
+
+[[maybe_unused]] ProtoDispatcherRegisterD D_reg_proto("D");
+[[maybe_unused]] TagIntDispatcherRegisterD D_reg_tag_int("D");
 

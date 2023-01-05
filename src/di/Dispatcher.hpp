@@ -4,16 +4,12 @@
 #include <tuple>
 #include <string>
 #include <unordered_map>
+#include <iostream>
+#include <cassert>
 
-#include "src/di/detail.hpp"
 #include "src/di/TagDispatcher.hpp"
 
 namespace di {
-
-template <typename Implementation, typename... Args>
-using DefaultBuilder = decltype(+[] (Args&&... args) {
-  return new Implementation(std::forward<Args>(args)...);
-});
 
 template <typename Interface, typename... Args>
 using BuilderType = Interface* (*)(Args... args);
@@ -29,13 +25,11 @@ class Dispatcher {
   class Register {
    public:
     explicit Register(const Tag& tag) {
-      if constexpr(std::same_as<ArgDispatcher, UndefinedArgDispatcher>) {
-        using DefaultBuilderType = DefaultBuilder<Implementation, Args...>;
-        RegisterImpl(tag, DefaultBuilderType()); 
+      if constexpr (std::same_as<ArgDispatcher, UndefinedArgDispatcher>) {
+        RegisterImpl(tag, +[](Args... args) -> TInterface* { return new Implementation(args...); }); 
       } else {
-        using Arg = detail_::nth_type_t<0, ArgsTuple>;
-        RegisterImpl(tag, +[](const Arg& arg) -> TInterface* {
-          return new Implementation(ArgDispatcher::DispatchArg(arg));
+        RegisterImpl(tag, +[](Args... args) -> TInterface* {
+          return new Implementation(ArgDispatcher::DispatchArg(args...));
         });
       }
     }
@@ -44,8 +38,9 @@ class Dispatcher {
     void RegisterImpl(const Tag& tag, Builder&& builder) { AddBuilder(tag, std::move(builder)); }
   };
 
-  static void AddBuilder(const Tag& tag, Builder builder) {
-    builders_.emplace(tag, std::move(builder));
+  static void AddBuilder(const Tag& tag, Builder&& builder) {
+    bool inserted = builders_.emplace(tag, std::move(builder)).second;
+    assert(inserted);
   }
 
   [[nodiscard]] static Interface* Create(const Tag& tag, Args... args) {
@@ -53,15 +48,16 @@ class Dispatcher {
   }
 
   [[nodiscard]] static Interface* Create(Args... args) {
-    const Tag& tag = TagDispatcher::DispatchTag(args...);
-    return CreateImpl(tag, std::forward<Args>(args)...);
+    return CreateImpl(TagDispatcher::DispatchTag(args...), args...);
   }
 
  private:
   Dispatcher() = delete;
 
   [[nodiscard]] static Interface* CreateImpl(const Tag& tag, Args... args) {
-    return builders_.at(tag)(std::forward<Args>(args)...);
+    auto it = builders_.find(tag);
+    assert(it != builders_.end());
+    return it->second(std::forward<Args>(args)...);
   }
 
   static std::unordered_map<Tag, Builder> builders_;
